@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="blue_header_start">#4facfe</color>
+    <color name="blue_header_end">#00f2fe</color>
+    <color name="card_bg_practice">#E3F2FD</color>
+    <color name="card_bg_battle">#F3E5F5</color>
+    <color name="card_bg_books">#E8F5E9</color>
+    <color name="card_bg_ai">#FFF3E0</color>
+    <color name="text_secondary">#757575</color>
+    <color name="purple_500">#FF6200EE</color>
+    <color name="purple_700">#FF3700B3</color>
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="teal_700">#FF018786</color>
+</resources>

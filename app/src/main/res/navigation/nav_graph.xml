@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/loginFragment">
+
+    <fragment
+        android:id="@+id/loginFragment"
+        android:name="com.example.techvidyaaa.ui.LoginFragment"
+        android:label="Login"
+        tools:layout="@layout/fragment_login">
+        <action
+            android:id="@+id/action_loginFragment_to_signupFragment"
+            app:destination="@id/signupFragment" />
+        <action
+            android:id="@+id/action_loginFragment_to_navigation_home"
+            app:destination="@id/navigation_home"
+            app:popUpTo="@id/loginFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/signupFragment"
+        android:name="com.example.techvidyaaa.ui.SignupFragment"
+        android:label="Signup"
+        tools:layout="@layout/fragment_signup">
+        <action
+            android:id="@+id/action_signupFragment_to_navigation_home"
+            app:destination="@id/navigation_home"
+            app:popUpTo="@id/loginFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/navigation_home"
+        android:name="com.example.techvidyaaa.ui.HomeFragment"
+        android:label="Home"
+        tools:layout="@layout/fragment_home">
+        <action
+            android:id="@+id/action_navigation_home_to_booksFragment"
+            app:destination="@id/booksFragment" />
+        <action
+            android:id="@+id/action_navigation_home_to_algorithmOptionsFragment"
+            app:destination="@id/algorithmOptionsFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/navigation_practice"
+        android:name="com.example.techvidyaaa.ui.PracticeFragment"
+        android:label="Practice"
+        tools:layout="@layout/fragment_practice" />
+
+    <fragment
+        android:id="@+id/navigation_battle"
+        android:name="com.example.techvidyaaa.ui.BattleFragment"
+        android:label="Battle"
+        tools:layout="@layout/fragment_battle" />
+
+    <fragment
+        android:id="@+id/navigation_leaderboard"
+        android:name="com.example.techvidyaaa.ui.LeaderboardFragment"
+        android:label="Leaderboard"
+        tools:layout="@layout/fragment_leaderboard" />
+
+    <fragment
+        android:id="@+id/navigation_profile"
+        android:name="com.example.techvidyaaa.ui.ProfileFragment"
+        android:label="Profile"
+        tools:layout="@layout/fragment_profile" />
+
+    <fragment
+        android:id="@+id/booksFragment"
+        android:name="com.example.techvidyaaa.ui.BooksFragment"
+        android:label="Books"
+        tools:layout="@layout/fragment_books" />
+
+    <fragment
+        android:id="@+id/algorithmOptionsFragment"
+        android:name="com.example.techvidyaaa.ui.AlgorithmOptionsFragment"
+        android:label="Algorithms"
+        tools:layout="@layout/fragment_algorithm_options" />
+
+</navigation>
