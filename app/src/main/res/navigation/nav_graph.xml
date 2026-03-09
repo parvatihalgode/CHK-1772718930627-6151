@@ -43,6 +43,9 @@
         <action
             android:id="@+id/action_navigation_home_to_algorithmOptionsFragment"
             app:destination="@id/algorithmOptionsFragment" />
+        <action
+            android:id="@+id/action_navigation_home_to_aiGuruFragment"
+            app:destination="@id/aiGuruFragment" />
     </fragment>
 
     <fragment
@@ -80,5 +83,11 @@
         android:name="com.example.techvidyaaa.ui.AlgorithmOptionsFragment"
         android:label="Algorithms"
         tools:layout="@layout/fragment_algorithm_options" />
+
+    <fragment
+        android:id="@+id/aiGuruFragment"
+        android:name="com.example.techvidyaaa.ui.AiGuruFragment"
+        android:label="AI Guru"
+        tools:layout="@layout/fragment_ai_guru" />
 
 </navigation>

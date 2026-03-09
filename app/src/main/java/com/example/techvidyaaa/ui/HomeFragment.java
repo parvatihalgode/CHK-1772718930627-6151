@@ -54,7 +54,7 @@ public class HomeFragment extends Fragment {
 
         // Navigation for Quick Actions
         binding.cardAiGuru.setOnClickListener(v -> 
-            Navigation.findNavController(v).navigate(R.id.navigation_practice));
+            Navigation.findNavController(v).navigate(R.id.action_navigation_home_to_aiGuruFragment));
             
         binding.cardPractice.setOnClickListener(v -> 
             Navigation.findNavController(v).navigate(R.id.navigation_practice));
