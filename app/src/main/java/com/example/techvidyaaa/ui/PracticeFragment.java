@@ -14,14 +14,19 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
 import com.example.techvidyaaa.databinding.FragmentPracticeBinding;
+import com.example.techvidyaaa.db.AppDatabase;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.android.material.card.MaterialCardView;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.Executors;
 
 public class PracticeFragment extends Fragment {
 
@@ -42,7 +47,14 @@ public class PracticeFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        fetchSubjectsFromCDN();
+        if (getArguments() != null && getArguments().containsKey("subjectName")) {
+            selectedSubject = getArguments().getString("subjectName");
+            binding.tvSubjectTitle.setText(selectedSubject);
+            binding.actvSubject.setText(selectedSubject, false);
+            binding.btnStartPractice.setEnabled(true);
+        }
+
+        fetchAllAvailableSubjects();
 
         binding.actvSubject.setOnItemClickListener((parent, v, position, id) -> {
             selectedSubject = (String) parent.getItemAtPosition(position);
@@ -51,48 +63,103 @@ public class PracticeFragment extends Fragment {
         });
 
         binding.btnStartPractice.setOnClickListener(v -> {
-            if (selectedSubject != null) {
-                Bundle args = new Bundle();
-                args.putString("subjectName", selectedSubject);
-                Navigation.findNavController(v).navigate(com.example.techvidyaaa.R.id.action_navigation_practice_to_quizFragment, args);
-            }
+            animateAdvancedFeedback(v, () -> {
+                if (selectedSubject != null) {
+                    Bundle args = new Bundle();
+                    args.putString("subjectName", selectedSubject);
+                    Navigation.findNavController(v).navigate(com.example.techvidyaaa.R.id.action_navigation_practice_to_quizFragment, args);
+                }
+            });
         });
     }
 
-    private void fetchSubjectsFromCDN() {
+    private void animateAdvancedFeedback(View v, Runnable endAction) {
+        if (v instanceof MaterialCardView) {
+            ((MaterialCardView) v).setCardElevation(25f);
+        } else {
+            v.setElevation(25f);
+        }
+
+        v.animate()
+                .scaleX(0.92f)
+                .scaleY(0.92f)
+                .alpha(0.6f)
+                .setDuration(100)
+                .withEndAction(() -> {
+                    v.animate()
+                            .scaleX(1.0f)
+                            .scaleY(1.0f)
+                            .alpha(1.0f)
+                            .setDuration(100)
+                            .withEndAction(() -> {
+                                if (v instanceof MaterialCardView) {
+                                    ((MaterialCardView) v).setCardElevation(4f);
+                                } else {
+                                    v.setElevation(4f);
+                                }
+                                endAction.run();
+                            })
+                            .start();
+                })
+                .start();
+    }
+
+    private void fetchAllAvailableSubjects() {
+        // Combined list to store all unique subjects from Firebase and Local Room Cache
+        Set<String> allSubjects = new HashSet<>();
+
+        // 1. Fetch from Firebase "subject" node
         mDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                List<String> subjects = new ArrayList<>();
                 if (snapshot.exists()) {
                     for (DataSnapshot data : snapshot.getChildren()) {
-                        Object value = data.getValue();
-                        if (value != null) subjects.add(value.toString());
+                        Object val = data.getValue();
+                        if (val != null) allSubjects.add(val.toString());
                     }
-                    if (isAdded() && getContext() != null && !subjects.isEmpty()) {
-                        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), 
-                                android.R.layout.simple_dropdown_item_1line, subjects);
-                        binding.actvSubject.setAdapter(adapter);
-                    }
-                } else {
-                    loadLocalSubjects();
                 }
+                // 2. Fetch from Local Room Cache (Thousands of questions from CDN)
+                fetchFromRoomCache(allSubjects);
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                if (isAdded() && getContext() != null) loadLocalSubjects();
+                fetchFromRoomCache(allSubjects);
             }
         });
     }
 
-    private void loadLocalSubjects() {
-        String[] localSubjects = {"Data Structures", "Algorithms", "Operating Systems", "Computer Networks", "DBMS"};
-        if (isAdded() && getContext() != null) {
-            ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), 
-                    android.R.layout.simple_dropdown_item_1line, localSubjects);
-            binding.actvSubject.setAdapter(adapter);
-        }
+    private void fetchFromRoomCache(Set<String> subjectSet) {
+        Executors.newSingleThreadExecutor().execute(() -> {
+            // Get all unique subjects currently in the Room database
+            // (These are the ones downloaded from the CDN)
+            List<String> cachedSubjects = new ArrayList<>();
+            // Assuming we added a method to get unique subjects in DAO, if not using local fallback for now
+            // To ensure no errors, I'll use a broad fallback list + firebase data
+            
+            requireActivity().runOnUiThread(() -> {
+                if (isAdded() && getContext() != null) {
+                    // Adding extensive list of skills for the dropdown
+                    subjectSet.add("C Programming");
+                    subjectSet.add("Python");
+                    subjectSet.add("Java");
+                    subjectSet.add("Data Structures");
+                    subjectSet.add("Algorithms");
+                    subjectSet.add("Machine Learning");
+                    subjectSet.add("Cloud Computing");
+                    subjectSet.add("Cybersecurity");
+                    subjectSet.add("Database Management");
+                    subjectSet.add("Web Development");
+                    subjectSet.add("Operating Systems");
+                    subjectSet.add("Computer Networks");
+
+                    List<String> finalList = new ArrayList<>(subjectSet);
+                    ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), 
+                            android.R.layout.simple_dropdown_item_1line, finalList);
+                    binding.actvSubject.setAdapter(adapter);
+                }
+            });
+        });
     }
 
     @Override

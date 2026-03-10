@@ -1,5 +1,7 @@
 package com.example.techvidyaaa.ui;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -21,6 +23,7 @@ import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 import com.example.techvidyaaa.R;
 import com.example.techvidyaaa.databinding.FragmentHomeBinding;
 import com.example.techvidyaaa.db.DatabaseHelper;
+import com.google.android.material.card.MaterialCardView;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -45,10 +48,11 @@ public class HomeFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         // Performance: Load CDN Profile Image with thumbnail for faster perceived speed
-        String cdnUrl = "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80";
+        String cdnUrl = "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80";
         Glide.with(this)
                 .load(cdnUrl)
-                .thumbnail(0.1f) // Load 10% size first
+                .override(200, 200)
+                .thumbnail(0.1f)
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
                 .placeholder(R.drawable.ic_profile)
                 .transition(DrawableTransitionOptions.withCrossFade())
@@ -71,28 +75,64 @@ public class HomeFragment extends Fragment {
 
         animateProgress(75);
 
-        // Core Navigation
-        binding.cardAiGuru.setOnClickListener(v -> Navigation.findNavController(v).navigate(R.id.action_navigation_home_to_aiGuruFragment));
-        binding.cardPractice.setOnClickListener(v -> Navigation.findNavController(v).navigate(R.id.navigation_practice));
-        binding.cardBattle.setOnClickListener(v -> Navigation.findNavController(v).navigate(R.id.navigation_battle));
-        binding.cardBooks.setOnClickListener(v -> Navigation.findNavController(v).navigate(R.id.booksFragment));
+        // Core Navigation with Advanced Pop, Blink, and Shadow Animation
+        binding.cardAiGuru.setOnClickListener(v -> animateAdvancedFeedback(v, () -> Navigation.findNavController(v).navigate(R.id.action_navigation_home_to_aiGuruFragment)));
+        binding.cardPractice.setOnClickListener(v -> animateAdvancedFeedback(v, () -> Navigation.findNavController(v).navigate(R.id.navigation_practice)));
+        binding.cardBattle.setOnClickListener(v -> animateAdvancedFeedback(v, () -> Navigation.findNavController(v).navigate(R.id.navigation_battle)));
+        binding.cardBooks.setOnClickListener(v -> animateAdvancedFeedback(v, () -> Navigation.findNavController(v).navigate(R.id.booksFragment)));
 
-        // Programming Languages
-        View.OnClickListener practiceNav = v -> Navigation.findNavController(v).navigate(R.id.navigation_practice);
-        binding.cardLangC.setOnClickListener(practiceNav);
-        binding.cardLangPython.setOnClickListener(practiceNav);
-        binding.cardLangCpp.setOnClickListener(practiceNav);
-        binding.cardLangJava.setOnClickListener(practiceNav);
+        // Programming Languages - Now navigating to SubjectOptionsFragment
+        binding.cardLangC.setOnClickListener(v -> navigateToSubjectOptions(v, "C"));
+        binding.cardLangPython.setOnClickListener(v -> navigateToSubjectOptions(v, "Python"));
+        binding.cardLangCpp.setOnClickListener(v -> navigateToSubjectOptions(v, "C++"));
+        binding.cardLangJava.setOnClickListener(v -> navigateToSubjectOptions(v, "Java"));
 
-        // Technical Topics
-        binding.cardTopicAlgorithms.setOnClickListener(v -> Navigation.findNavController(v).navigate(R.id.algorithmOptionsFragment));
-        binding.cardTopicDataStructures.setOnClickListener(practiceNav);
-        binding.cardTopicDatabases.setOnClickListener(practiceNav);
-        binding.cardTopicWebDev.setOnClickListener(practiceNav);
+        // Technical Topics - Also navigating to SubjectOptionsFragment for consistency
+        binding.cardTopicAlgorithms.setOnClickListener(v -> navigateToSubjectOptions(v, "Algorithms"));
+        binding.cardTopicDataStructures.setOnClickListener(v -> navigateToSubjectOptions(v, "Data Structures"));
+        binding.cardTopicDatabases.setOnClickListener(v -> navigateToSubjectOptions(v, "Databases"));
+        binding.cardTopicWebDev.setOnClickListener(v -> navigateToSubjectOptions(v, "Web Dev"));
 
         // More Resources
-        binding.btnReferenceBooks.setOnClickListener(v -> Navigation.findNavController(v).navigate(R.id.booksFragment));
-        binding.btnStudyNotes.setOnClickListener(practiceNav);
+        binding.btnReferenceBooks.setOnClickListener(v -> animateAdvancedFeedback(v, () -> Navigation.findNavController(v).navigate(R.id.booksFragment)));
+        binding.btnStudyNotes.setOnClickListener(v -> animateAdvancedFeedback(v, () -> Navigation.findNavController(v).navigate(R.id.navigation_practice)));
+    }
+
+    private void navigateToSubjectOptions(View v, String subjectName) {
+        animateAdvancedFeedback(v, () -> {
+            Bundle args = new Bundle();
+            args.putString("subjectName", subjectName);
+            Navigation.findNavController(v).navigate(R.id.action_navigation_home_to_subjectOptionsFragment, args);
+        });
+    }
+
+    private void animateAdvancedFeedback(View v, Runnable endAction) {
+        // 1. Shadow/Elevation Effect
+        if (v instanceof MaterialCardView) {
+            ((MaterialCardView) v).setCardElevation(20f);
+        }
+
+        // 2. Pop (Scale) and Blink (Alpha) Effect
+        v.animate()
+                .scaleX(0.92f)
+                .scaleY(0.92f)
+                .alpha(0.7f)
+                .setDuration(100)
+                .withEndAction(() -> {
+                    v.animate()
+                            .scaleX(1.0f)
+                            .scaleY(1.0f)
+                            .alpha(1.0f)
+                            .setDuration(100)
+                            .withEndAction(() -> {
+                                if (v instanceof MaterialCardView) {
+                                    ((MaterialCardView) v).setCardElevation(4f); // Restore shadow
+                                }
+                                endAction.run();
+                            })
+                            .start();
+                })
+                .start();
     }
 
     private void animateProgress(int targetProgress) {

@@ -59,65 +59,73 @@ public class SignupFragment extends Fragment {
         binding.actvYear.setAdapter(adapter);
 
         binding.btnSignup.setOnClickListener(v -> {
-            String username = binding.etUsername.getText().toString().trim();
-            String degree = binding.etDegree.getText().toString().trim();
-            String year = binding.actvYear.getText().toString().trim();
-            String email = binding.etSignupEmail.getText().toString().trim();
-            String password = binding.etSignupPassword.getText().toString().trim();
+            animatePop(v, () -> {
+                String username = binding.etUsername.getText().toString().trim();
+                String degree = binding.etDegree.getText().toString().trim();
+                String year = binding.actvYear.getText().toString().trim();
+                String email = binding.etSignupEmail.getText().toString().trim();
+                String password = binding.etSignupPassword.getText().toString().trim();
 
-            if (username.isEmpty() || email.isEmpty() || password.isEmpty()) {
-                Toast.makeText(requireContext(), "Please fill all required fields", Toast.LENGTH_SHORT).show();
-                return;
-            }
+                if (username.isEmpty() || email.isEmpty() || password.isEmpty()) {
+                    Toast.makeText(requireContext(), "Please fill all required fields", Toast.LENGTH_SHORT).show();
+                    return;
+                }
 
-            if (password.length() < 6) {
-                Toast.makeText(requireContext(), "Password must be at least 6 characters", Toast.LENGTH_SHORT).show();
-                return;
-            }
+                if (password.length() < 6) {
+                    Toast.makeText(requireContext(), "Password must be at least 6 characters", Toast.LENGTH_SHORT).show();
+                    return;
+                }
 
-            binding.btnSignup.setEnabled(false);
+                binding.btnSignup.setEnabled(false);
 
-            // Performance: Save to local SQLite in background
-            executorService.execute(() -> {
-                dbHelper.addUser(username, degree, year, email, password);
-                
-                mainHandler.post(() -> {
-                    if (isNetworkAvailable()) {
-                        // Online Signup
-                        mAuth.createUserWithEmailAndPassword(email, password)
-                                .addOnCompleteListener(task -> {
-                                    if (task.isSuccessful()) {
-                                        FirebaseUser user = mAuth.getCurrentUser();
-                                        if (user != null) {
-                                            Map<String, Object> userMap = new HashMap<>();
-                                            userMap.put("username", username);
-                                            userMap.put("degree", degree);
-                                            userMap.put("year", year);
-                                            userMap.put("email", email);
-                                            mDatabase.child("users").child(user.getUid()).setValue(userMap);
+                // Performance: Save to local SQLite in background
+                executorService.execute(() -> {
+                    dbHelper.addUser(username, degree, year, email, password);
+                    
+                    mainHandler.post(() -> {
+                        if (isNetworkAvailable()) {
+                            // Online Signup
+                            mAuth.createUserWithEmailAndPassword(email, password)
+                                    .addOnCompleteListener(task -> {
+                                        if (task.isSuccessful()) {
+                                            FirebaseUser user = mAuth.getCurrentUser();
+                                            if (user != null) {
+                                                Map<String, Object> userMap = new HashMap<>();
+                                                userMap.put("username", username);
+                                                userMap.put("degree", degree);
+                                                userMap.put("year", year);
+                                                userMap.put("email", email);
+                                                mDatabase.child("users").child(user.getUid()).setValue(userMap);
+                                            }
+                                            Toast.makeText(requireContext(), "Signup Successful!", Toast.LENGTH_SHORT).show();
+                                            if (isAdded()) {
+                                                Navigation.findNavController(view).navigate(R.id.action_signupFragment_to_navigation_home);
+                                            }
+                                        } else {
+                                            handleSignupError(task.getException(), view);
                                         }
-                                        Toast.makeText(requireContext(), "Signup Successful!", Toast.LENGTH_SHORT).show();
-                                        if (isAdded()) {
-                                            Navigation.findNavController(view).navigate(R.id.action_signupFragment_to_navigation_home);
-                                        }
-                                    } else {
-                                        handleSignupError(task.getException(), view);
-                                    }
-                                });
-                    } else {
-                        // Offline Signup
-                        Toast.makeText(requireContext(), "Offline Mode: Signup saved locally.", Toast.LENGTH_LONG).show();
-                        if (isAdded()) {
-                            Navigation.findNavController(view).navigate(R.id.action_signupFragment_to_navigation_home);
+                                    });
+                        } else {
+                            // Offline Signup
+                            Toast.makeText(requireContext(), "Offline Mode: Signup saved locally.", Toast.LENGTH_LONG).show();
+                            if (isAdded()) {
+                                Navigation.findNavController(view).navigate(R.id.action_signupFragment_to_navigation_home);
+                            }
                         }
-                    }
+                    });
                 });
             });
         });
 
         binding.tvLogin.setOnClickListener(v -> {
-            Navigation.findNavController(view).popBackStack();
+            animatePop(v, () -> Navigation.findNavController(view).popBackStack());
         });
+    }
+
+    private void animatePop(View v, Runnable endAction) {
+        v.animate().scaleX(0.95f).scaleY(0.95f).setDuration(100).withEndAction(() -> {
+            v.animate().scaleX(1.0f).scaleY(1.0f).setDuration(100).withEndAction(endAction).start();
+        }).start();
     }
 
     private void handleSignupError(Exception e, View view) {

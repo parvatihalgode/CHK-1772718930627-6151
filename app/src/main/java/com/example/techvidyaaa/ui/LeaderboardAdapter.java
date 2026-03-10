@@ -30,10 +30,13 @@ public class LeaderboardAdapter extends RecyclerView.Adapter<LeaderboardAdapter.
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+        // Since podium handles top 3, the list starts from rank 4
+        int rank = position + 4;
         UserScore score = userScores.get(position);
-        holder.tvRank.setText(String.valueOf(position + 1));
+        holder.tvRank.setText(String.valueOf(rank));
         holder.tvName.setText(score.username);
         holder.tvScore.setText(String.valueOf(score.score));
+        holder.tvUserStatus.setText("Active Learner");
     }
 
     @Override
@@ -42,13 +45,14 @@ public class LeaderboardAdapter extends RecyclerView.Adapter<LeaderboardAdapter.
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView tvRank, tvName, tvScore;
+        TextView tvRank, tvName, tvScore, tvUserStatus;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             tvRank = itemView.findViewById(R.id.tvRank);
             tvName = itemView.findViewById(R.id.tvName);
             tvScore = itemView.findViewById(R.id.tvScore);
+            tvUserStatus = itemView.findViewById(R.id.tvUserStatus);
         }
     }
 

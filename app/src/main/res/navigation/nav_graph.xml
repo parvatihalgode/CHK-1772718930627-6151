@@ -46,6 +46,25 @@
         <action
             android:id="@+id/action_navigation_home_to_aiGuruFragment"
             app:destination="@id/aiGuruFragment" />
+        <action
+            android:id="@+id/action_navigation_home_to_subjectOptionsFragment"
+            app:destination="@id/subjectOptionsFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/subjectOptionsFragment"
+        android:name="com.example.techvidyaaa.ui.SubjectOptionsFragment"
+        android:label="Choose Activity"
+        tools:layout="@layout/fragment_subject_options">
+        <argument
+            android:name="subjectName"
+            app:argType="string" />
+        <action
+            android:id="@+id/action_subjectOptionsFragment_to_learnConceptsFragment"
+            app:destination="@id/learnConceptsFragment" />
+        <action
+            android:id="@+id/action_subjectOptionsFragment_to_slidesFragment"
+            app:destination="@id/slidesFragment" />
     </fragment>
 
     <fragment
@@ -63,6 +82,26 @@
         android:name="com.example.techvidyaaa.ui.QuizFragment"
         android:label="Quiz"
         tools:layout="@layout/fragment_quiz">
+        <argument
+            android:name="subjectName"
+            app:argType="string" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/learnConceptsFragment"
+        android:name="com.example.techvidyaaa.ui.LearnConceptsFragment"
+        android:label="Learn Concepts"
+        tools:layout="@layout/fragment_learn_concepts">
+        <argument
+            android:name="subjectName"
+            app:argType="string" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/slidesFragment"
+        android:name="com.example.techvidyaaa.ui.SlidesFragment"
+        android:label="Slides"
+        tools:layout="@layout/fragment_slides">
         <argument
             android:name="subjectName"
             app:argType="string" />

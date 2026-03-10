@@ -1,7 +1,8 @@
 package com.example.techvidyaaa.ui;
 
 import android.os.Bundle;
-import android.util.Log;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,25 +15,30 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
 import com.example.techvidyaaa.databinding.FragmentQuizBinding;
+import com.example.techvidyaaa.db.AppDatabase;
+import com.example.techvidyaaa.db.QuestionEntity;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.database.ServerValue;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class QuizFragment extends Fragment {
 
-    private static final String TAG = "QuizFragment";
     private FragmentQuizBinding binding;
-    private DatabaseReference mDatabase;
-    private List<Question> questionList;
+    private List<QuestionEntity> questionList;
     private int currentQuestionIndex = 0;
     private int score = 0;
     private String subjectName;
+    private long startTime;
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
     @Nullable
     @Override
@@ -41,7 +47,6 @@ public class QuizFragment extends Fragment {
         if (getArguments() != null) {
             subjectName = getArguments().getString("subjectName");
         }
-        mDatabase = FirebaseDatabase.getInstance().getReference("questions").child(subjectName);
         return binding.getRoot();
     }
 
@@ -50,7 +55,9 @@ public class QuizFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         binding.tvQuizTitle.setText(subjectName + " Practice");
         questionList = new ArrayList<>();
-        loadQuestions();
+        startTime = System.currentTimeMillis();
+
+        loadQuestionsFromCache();
 
         binding.btnNext.setOnClickListener(v -> {
             checkAnswer();
@@ -63,39 +70,25 @@ public class QuizFragment extends Fragment {
         });
     }
 
-    private void loadQuestions() {
-        mDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                if (snapshot.exists()) {
-                    for (DataSnapshot data : snapshot.getChildren()) {
-                        Question q = data.getValue(Question.class);
-                        if (q != null) questionList.add(q);
-                    }
-                    if (!questionList.isEmpty()) {
-                        displayQuestion();
-                    } else {
-                        Toast.makeText(requireContext(), "No questions found for this topic", Toast.LENGTH_SHORT).show();
-                        Navigation.findNavController(requireView()).popBackStack();
-                    }
-                } else {
-                    seedDummyQuestions(); // For testing if DB is empty
+    private void loadQuestionsFromCache() {
+        executorService.execute(() -> {
+            AppDatabase db = AppDatabase.getDatabase(requireContext());
+            List<QuestionEntity> questions = db.questionDao().getQuestionsBySubject(subjectName);
+            mainHandler.post(() -> {
+                if (questions != null && !questions.isEmpty()) {
+                    questionList.clear();
+                    questionList.addAll(questions);
                     displayQuestion();
+                } else {
+                    Toast.makeText(requireContext(), "No questions found for this topic. Syncing from CDN...", Toast.LENGTH_SHORT).show();
+                    Navigation.findNavController(requireView()).popBackStack();
                 }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {}
+            });
         });
     }
 
-    private void seedDummyQuestions() {
-        questionList.add(new Question("What is " + subjectName + "?", "A tool", "A concept", "A language", "All of above", 3));
-        questionList.add(new Question("Is " + subjectName + " important?", "Yes", "No", "Maybe", "Don't know", 0));
-    }
-
     private void displayQuestion() {
-        Question q = questionList.get(currentQuestionIndex);
+        QuestionEntity q = questionList.get(currentQuestionIndex);
         binding.tvQuestion.setText(q.question);
         binding.rbOption1.setText(q.option1);
         binding.rbOption2.setText(q.option2);
@@ -103,7 +96,7 @@ public class QuizFragment extends Fragment {
         binding.rbOption4.setText(q.option4);
         binding.rgOptions.clearCheck();
         binding.quizProgress.setProgress((int) (((float) (currentQuestionIndex + 1) / questionList.size()) * 100));
-        
+
         if (currentQuestionIndex == questionList.size() - 1) {
             binding.btnNext.setText("Finish Quiz");
         }
@@ -124,35 +117,34 @@ public class QuizFragment extends Fragment {
 
     private void finishQuiz() {
         String userId = FirebaseAuth.getInstance().getUid();
+        long durationMillis = System.currentTimeMillis() - startTime;
+        int durationMinutes = (int) (durationMillis / (1000 * 60));
+        if (durationMinutes == 0) durationMinutes = 1; // Minimum 1 minute
+
         if (userId != null) {
             DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("leaderboard").child(userId);
-            userRef.addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot snapshot) {
-                    int currentTotal = 0;
-                    if (snapshot.exists() && snapshot.hasChild("score")) {
-                        currentTotal = snapshot.child("score").getValue(Integer.class);
-                    }
-                    userRef.child("score").setValue(currentTotal + score);
-                    userRef.child("username").setValue(FirebaseAuth.getInstance().getCurrentUser().getEmail().split("@")[0]);
-                }
+            DatabaseReference statsRef = FirebaseDatabase.getInstance().getReference("user_stats").child(userId);
 
-                @Override
-                public void onCancelled(@NonNull DatabaseError error) {}
-            });
+            Map<String, Object> leaderboardUpdates = new HashMap<>();
+            leaderboardUpdates.put("score", ServerValue.increment(score));
+            leaderboardUpdates.put("username", FirebaseAuth.getInstance().getCurrentUser().getEmail().split("@")[0]);
+            userRef.updateChildren(leaderboardUpdates);
+
+            Map<String, Object> statsUpdates = new HashMap<>();
+            statsUpdates.put("totalLearningTime", ServerValue.increment(durationMinutes));
+            statsUpdates.put("quizzesTaken", ServerValue.increment(1));
+            statsUpdates.put("lastActive", ServerValue.TIMESTAMP);
+            statsRef.updateChildren(statsUpdates);
         }
+
         Toast.makeText(requireContext(), "Quiz Finished! Points Earned: " + score, Toast.LENGTH_LONG).show();
         Navigation.findNavController(requireView()).popBackStack();
     }
 
-    public static class Question {
-        public String question, option1, option2, option3, option4;
-        public int correctAnswerIndex;
-
-        public Question() {}
-        public Question(String q, String o1, String o2, String o3, String o4, int correct) {
-            this.question = q; this.option1 = o1; this.option2 = o2; this.option3 = o3; this.option4 = o4;
-            this.correctAnswerIndex = correct;
-        }
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
+        executorService.shutdown();
     }
 }

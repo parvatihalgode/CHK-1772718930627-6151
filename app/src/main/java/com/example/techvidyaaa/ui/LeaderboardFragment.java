@@ -47,17 +47,17 @@ public class LeaderboardFragment extends Fragment {
         scoreList = new ArrayList<>();
         adapter = new LeaderboardAdapter(scoreList);
         binding.rvLeaderboard.setLayoutManager(new LinearLayoutManager(requireContext()));
+        binding.rvLeaderboard.setHasFixedSize(true);
         binding.rvLeaderboard.setAdapter(adapter);
 
         fetchRealLeaderboardData();
     }
 
     private void fetchRealLeaderboardData() {
-        // Optimization: Use Query to limit results and sort by score
-        // This is much faster than downloading all users
+        // Query top users sorted by score. This only fetches real users from Firebase.
         Query leaderboardQuery = mDatabase.orderByChild("score").limitToLast(50);
 
-        leaderboardQuery.addListenerForSingleValueEvent(new ValueEventListener() {
+        leaderboardQuery.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 scoreList.clear();
@@ -68,42 +68,60 @@ public class LeaderboardFragment extends Fragment {
                             scoreList.add(userScore);
                         }
                     }
-                    // Firebase returns in ascending order, we want descending for leaderboard
-                    Collections.reverse(scoreList);
-                    adapter.notifyDataSetChanged();
+                    // Sort descending: highest score first
+                    Collections.sort(scoreList, (a, b) -> b.score - a.score);
+                    
+                    if (isAdded()) {
+                        updatePodium();
+                        adapter.notifyDataSetChanged();
+                    }
                 } else {
-                    Log.d(TAG, "No leaderboard data found");
-                    // Add some initial real-looking data if empty for demo
-                    seedInitialDataIfEmpty();
+                    // Reset podium if no data exists
+                    resetPodium();
+                    adapter.notifyDataSetChanged();
                 }
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Log.e(TAG, "Database error: " + error.getMessage());
                 if (isAdded()) {
-                    Toast.makeText(requireContext(), "Failed to load leaderboard", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), "Sync Error", Toast.LENGTH_SHORT).show();
                 }
             }
         });
     }
 
-    private void seedInitialDataIfEmpty() {
-        // Only for first-time use so the user sees a "real" working list
-        List<LeaderboardAdapter.UserScore> seedData = new ArrayList<>();
-        seedData.add(new LeaderboardAdapter.UserScore("TechMaster", 2500));
-        seedData.add(new LeaderboardAdapter.UserScore("CodeNinja", 2100));
-        seedData.add(new LeaderboardAdapter.UserScore("JavaGuru", 1850));
-        seedData.add(new LeaderboardAdapter.UserScore("Pythonic", 1500));
-        seedData.add(new LeaderboardAdapter.UserScore("AlgoWhiz", 1200));
-        
-        for (LeaderboardAdapter.UserScore user : seedData) {
-            mDatabase.push().setValue(user);
+    private void updatePodium() {
+        // Clear previous podium data
+        resetPodium();
+
+        if (scoreList.size() >= 1) {
+            binding.tvRank1Name.setText(scoreList.get(0).username);
+            binding.tvRank1Initials.setText(getInitials(scoreList.get(0).username));
         }
-        
-        scoreList.addAll(seedData);
-        Collections.sort(scoreList, (a, b) -> b.score - a.score);
-        adapter.notifyDataSetChanged();
+        if (scoreList.size() >= 2) {
+            binding.tvRank2Name.setText(scoreList.get(1).username);
+            binding.tvRank2Initials.setText(getInitials(scoreList.get(1).username));
+        }
+        if (scoreList.size() >= 3) {
+            binding.tvRank3Name.setText(scoreList.get(2).username);
+            binding.tvRank3Initials.setText(getInitials(scoreList.get(2).username));
+        }
+    }
+
+    private void resetPodium() {
+        binding.tvRank1Name.setText("-");
+        binding.tvRank1Initials.setText("1");
+        binding.tvRank2Name.setText("-");
+        binding.tvRank2Initials.setText("2");
+        binding.tvRank3Name.setText("-");
+        binding.tvRank3Initials.setText("3");
+    }
+
+    private String getInitials(String name) {
+        if (name == null || name.isEmpty()) return "?";
+        if (name.length() >= 2) return name.substring(0, 2).toUpperCase();
+        return name.toUpperCase();
     }
 
     @Override
