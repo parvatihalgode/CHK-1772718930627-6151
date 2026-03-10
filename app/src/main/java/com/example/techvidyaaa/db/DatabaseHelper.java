@@ -30,7 +30,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + COLUMN_USERNAME + " TEXT,"
                 + COLUMN_DEGREE + " TEXT,"
                 + COLUMN_YEAR + " TEXT,"
-                + COLUMN_EMAIL + " TEXT,"
+                + COLUMN_EMAIL + " TEXT UNIQUE,"
                 + COLUMN_PASSWORD + " TEXT" + ")";
         db.execSQL(CREATE_USER_TABLE);
     }
@@ -50,7 +50,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put(COLUMN_EMAIL, email);
         values.put(COLUMN_PASSWORD, password);
 
-        long id = db.insert(TABLE_USER, null, values);
+        long id = db.insertWithOnConflict(TABLE_USER, null, values, SQLiteDatabase.CONFLICT_REPLACE);
         db.close();
         return id;
     }

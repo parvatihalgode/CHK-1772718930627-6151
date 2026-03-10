@@ -1,32 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:gravity="center"
     android:orientation="vertical"
-    android:padding="24dp">
+    android:padding="24dp"
+    android:background="#F8F9FA">
 
-    <ImageView
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:src="@drawable/ic_profile"
-        android:layout_marginBottom="16dp"/>
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        app:cardCornerRadius="60dp"
+        app:cardElevation="4dp"
+        android:layout_marginBottom="24dp">
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:src="@drawable/ic_profile"
+            android:padding="20dp"
+            app:tint="@color/purple_700"/>
+    </com.google.android.material.card.MaterialCardView>
 
     <TextView
         android:id="@+id/tvUsername"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Username"
-        android:textSize="24sp"
-        android:textStyle="bold" />
+        android:text="Guest User"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        android:textColor="@color/black" />
 
     <TextView
         android:id="@+id/tvUserInfo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Degree | Year"
+        android:text="Not logged in"
         android:gravity="center"
         android:textSize="16sp"
+        android:textColor="@color/text_secondary"
         android:layout_marginTop="8dp" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnLogout"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:text="Logout"
+        android:layout_marginTop="48dp"
+        app:cornerRadius="12dp"
+        android:backgroundTint="#FF5252"
+        android:textColor="@color/white" />
 
 </LinearLayout>

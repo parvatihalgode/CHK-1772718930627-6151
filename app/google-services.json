@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "657805799973",
+    "project_id": "techvidya-cbca8",
+    "storage_bucket": "techvidya-cbca8.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:657805799973:android:863199931f90dcb47c05cc",
+        "android_client_info": {
+          "package_name": "com.example.techvidyaaa"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBuAYuxIFJvWf5oLNfqoY50po8RoQQfsOs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

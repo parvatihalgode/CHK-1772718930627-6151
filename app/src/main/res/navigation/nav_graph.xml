@@ -52,7 +52,21 @@
         android:id="@+id/navigation_practice"
         android:name="com.example.techvidyaaa.ui.PracticeFragment"
         android:label="Practice"
-        tools:layout="@layout/fragment_practice" />
+        tools:layout="@layout/fragment_practice">
+        <action
+            android:id="@+id/action_navigation_practice_to_quizFragment"
+            app:destination="@id/quizFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/quizFragment"
+        android:name="com.example.techvidyaaa.ui.QuizFragment"
+        android:label="Quiz"
+        tools:layout="@layout/fragment_quiz">
+        <argument
+            android:name="subjectName"
+            app:argType="string" />
+    </fragment>
 
     <fragment
         android:id="@+id/navigation_battle"
