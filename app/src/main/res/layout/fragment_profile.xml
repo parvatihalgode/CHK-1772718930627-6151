@@ -204,13 +204,14 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content">
                             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="🧮 General" android:textSize="14sp"/>
-                            <TextView android:id="@+id/tvGeneralTime" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_alignParentEnd="true" android:text="6m (96%)" android:textSize="12sp" android:textColor="@color/text_secondary"/>
+                            <TextView android:id="@+id/tvGeneralTime" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_alignParentEnd="true" android:text="0m (0%)" android:textSize="12sp" android:textColor="@color/text_secondary"/>
                         </RelativeLayout>
                         <com.google.android.material.progressindicator.LinearProgressIndicator
+                            android:id="@+id/progressGeneral"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
-                            android:progress="96"
+                            android:progress="0"
                             app:indicatorColor="#2196F3"
                             app:trackColor="#E3F2FD"
                             app:trackThickness="8dp"
@@ -221,9 +222,10 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="12dp">
                             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="⚔️ Battle" android:textSize="14sp"/>
-                            <TextView android:id="@+id/tvBattleTime" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_alignParentEnd="true" android:text="0m (0%)" android:textSize="12sp" android:textColor="@color/text_secondary"/>
+                            <TextView android:id="@+id/tvBattleTimeBreakdown" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_alignParentEnd="true" android:text="0m (0%)" android:textSize="12sp" android:textColor="@color/text_secondary"/>
                         </RelativeLayout>
                         <com.google.android.material.progressindicator.LinearProgressIndicator
+                            android:id="@+id/progressBattle"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
@@ -238,13 +240,14 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="12dp">
                             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="📝 Practice" android:textSize="14sp"/>
-                            <TextView android:id="@+id/tvPracticeTime" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_alignParentEnd="true" android:text="0m (4%)" android:textSize="12sp" android:textColor="@color/text_secondary"/>
+                            <TextView android:id="@+id/tvPracticeTimeBreakdown" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_alignParentEnd="true" android:text="0m (0%)" android:textSize="12sp" android:textColor="@color/text_secondary"/>
                         </RelativeLayout>
                         <com.google.android.material.progressindicator.LinearProgressIndicator
+                            android:id="@+id/progressPractice"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
-                            android:progress="4"
+                            android:progress="0"
                             app:indicatorColor="#4CAF50"
                             app:trackColor="#E8F5E9"
                             app:trackThickness="8dp"
@@ -330,16 +333,24 @@
                     android:orientation="vertical"
                     android:padding="20dp">
                     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Recent Quiz Attempts" android:textStyle="bold" android:textSize="16sp"/>
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Your latest quiz performances" android:textColor="@color/text_secondary" android:textSize="12sp"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Your latest quiz performances" android:textColor="@color/text_secondary" android:textSize="12sp" android:layout_marginBottom="16dp"/>
 
-                    <TextView
+                    <LinearLayout
+                        android:id="@+id/layoutRecentAttempts"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="32dp"
-                        android:layout_marginBottom="32dp"
-                        android:gravity="center"
-                        android:text="No quiz attempts yet. Start practicing!"
-                        android:textColor="@color/text_secondary"/>
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/tvNoAttempts"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="16dp"
+                            android:layout_marginBottom="16dp"
+                            android:gravity="center"
+                            android:text="No quiz attempts yet. Start practicing!"
+                            android:textColor="@color/text_secondary"/>
+                    </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 

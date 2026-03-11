@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">TechVidyaaa</string>
+    <string name="quiz_center">Quiz Center</string>
+    <string name="start_quiz_with_timer">Start Quiz (With Timer)</string>
+    <string name="practice_center">Practice Center</string>
+    <string name="start_practice_session">Start Practice Session</string>
+    <string name="select_subject_difficulty">Please select subject and difficulty</string>
+    <string name="select_difficulty_level">Now select a difficulty level</string>
 </resources>

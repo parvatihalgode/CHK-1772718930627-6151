@@ -4,99 +4,191 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="24dp"
     android:background="#F8F9FA">
 
-    <TextView
-        android:id="@+id/tvQuizTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Quiz"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="16dp" />
-
-    <ProgressBar
-        android:id="@+id/quizProgress"
-        style="?android:attr/progressBarStyleHorizontal"
+    <!-- Header Section -->
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="24dp" />
-
-    <com.google.android.material.card.MaterialCardView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:cardCornerRadius="16dp"
-        app:cardElevation="4dp"
-        android:layout_marginBottom="24dp">
+        android:background="@drawable/header_gradient"
+        android:padding="24dp">
 
         <TextView
-            android:id="@+id/tvQuestion"
-            android:layout_width="match_parent"
+            android:id="@+id/tvQuizTitle"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:padding="24dp"
-            android:text="Loading question..."
-            android:textSize="18sp"
-            android:lineSpacingExtra="4dp" />
-    </com.google.android.material.card.MaterialCardView>
+            android:text="Practice Mode"
+            android:textColor="@color/white"
+            android:textSize="24sp"
+            android:textStyle="bold" />
 
-    <RadioGroup
-        android:id="@+id/rgOptions"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
-
-        <RadioButton
-            android:id="@+id/rbOption1"
-            android:layout_width="match_parent"
+        <TextView
+            android:id="@+id/tvTimer"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:padding="12dp"
-            android:layout_marginBottom="8dp"
-            android:background="@drawable/option_background"
-            android:button="@null"
-            android:text="Option 1" />
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:background="@drawable/chat_input_background"
+            android:backgroundTint="#33FFFFFF"
+            android:drawableStart="@drawable/ic_battle"
+            android:drawablePadding="8dp"
+            android:paddingHorizontal="12dp"
+            android:paddingVertical="6dp"
+            android:text="05:00"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:drawableTint="@color/white" />
+    </RelativeLayout>
 
-        <RadioButton
-            android:id="@+id/rbOption2"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="12dp"
-            android:layout_marginBottom="8dp"
-            android:background="@drawable/option_background"
-            android:button="@null"
-            android:text="Option 2" />
-
-        <RadioButton
-            android:id="@+id/rbOption3"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="12dp"
-            android:layout_marginBottom="8dp"
-            android:background="@drawable/option_background"
-            android:button="@null"
-            android:text="Option 3" />
-
-        <RadioButton
-            android:id="@+id/rbOption4"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="12dp"
-            android:layout_marginBottom="8dp"
-            android:background="@drawable/option_background"
-            android:button="@null"
-            android:text="Option 4" />
-    </RadioGroup>
-
-    <View
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_weight="1">
 
-    <Button
-        android:id="@+id/btnNext"
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <com.google.android.material.progressindicator.LinearProgressIndicator
+                android:id="@+id/quizProgress"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp"
+                app:indicatorColor="@color/purple_700"
+                app:trackColor="#E0E0E0"
+                app:trackThickness="8dp"
+                app:trackCornerRadius="4dp" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="2dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="#EEEEEE">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="24dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="QUESTION"
+                        android:textColor="@color/purple_700"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.1"
+                        android:layout_marginBottom="12dp"/>
+
+                    <TextView
+                        android:id="@+id/tvQuestion"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:lineSpacingExtra="6dp"
+                        android:text="Loading your technical challenge..."
+                        android:textColor="#333333"
+                        android:textSize="19sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <RadioGroup
+                android:id="@+id/rgOptions"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <RadioButton
+                    android:id="@+id/rbOption1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    android:background="@drawable/option_background"
+                    android:button="@null"
+                    android:elevation="1dp"
+                    android:padding="16dp"
+                    android:text="Option 1"
+                    android:textSize="16sp"
+                    android:textColor="#444444"/>
+
+                <RadioButton
+                    android:id="@+id/rbOption2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    android:background="@drawable/option_background"
+                    android:button="@null"
+                    android:elevation="1dp"
+                    android:padding="16dp"
+                    android:text="Option 2"
+                    android:textSize="16sp"
+                    android:textColor="#444444"/>
+
+                <RadioButton
+                    android:id="@+id/rbOption3"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    android:background="@drawable/option_background"
+                    android:button="@null"
+                    android:elevation="1dp"
+                    android:padding="16dp"
+                    android:text="Option 3"
+                    android:textSize="16sp"
+                    android:textColor="#444444"/>
+
+                <RadioButton
+                    android:id="@+id/rbOption4"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    android:background="@drawable/option_background"
+                    android:button="@null"
+                    android:elevation="1dp"
+                    android:padding="16dp"
+                    android:text="Option 4"
+                    android:textSize="16sp"
+                    android:textColor="#444444"/>
+            </RadioGroup>
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- Navigation Buttons -->
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:text="Next Question"
-        app:cornerRadius="12dp" />
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="20dp"
+        android:background="@color/white"
+        android:elevation="8dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnPrevious"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:layout_weight="1"
+            android:text="Previous"
+            android:layout_marginEnd="8dp"
+            app:cornerRadius="12dp"
+            android:visibility="gone"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnNext"
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:layout_weight="2"
+            android:text="Submit Answer"
+            android:textStyle="bold"
+            app:cornerRadius="16dp"
+            android:backgroundTint="@color/purple_700"/>
+    </LinearLayout>
 
 </LinearLayout>

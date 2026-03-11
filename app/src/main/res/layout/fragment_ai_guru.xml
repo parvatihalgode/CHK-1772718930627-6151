@@ -27,7 +27,7 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/tvAiGuruTitle"
             android:layout_marginTop="4dp"
-            android:text="Ask me anything about engineering and programming"
+            android:text="Professional Technical Advisor"
             android:textColor="#E0E0E0"
             android:textSize="14sp" />
     </RelativeLayout>
@@ -37,128 +37,75 @@
         android:layout_height="0dp"
         android:layout_weight="1">
 
-        <androidx.core.widget.NestedScrollView
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvChatMessages"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:padding="16dp">
+            android:padding="16dp"
+            android:clipToPadding="false" />
+
+        <!-- Initial Welcome UI -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardWelcome"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="24dp"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="2dp"
+            android:layout_gravity="center">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:gravity="center"
+                android:orientation="vertical"
+                android:padding="32dp">
 
-                <!-- Welcome Card -->
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/cardWelcome"
-                    android:layout_width="match_parent"
+                <ImageView
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    android:src="@drawable/ic_ai_guru"
+                    app:tint="@color/purple_700" />
+
+                <TextView
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    app:cardCornerRadius="16dp"
-                    app:cardElevation="2dp"
-                    android:layout_marginTop="24dp">
+                    android:layout_marginTop="16dp"
+                    android:text="Ask AI Guru!"
+                    android:textSize="22sp"
+                    android:textStyle="bold" />
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:gravity="center"
-                        android:orientation="vertical"
-                        android:padding="32dp">
-
-                        <ImageView
-                            android:layout_width="64dp"
-                            android:layout_height="64dp"
-                            android:src="@drawable/ic_algorithms"
-                            app:tint="@color/blue_header_start" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="16dp"
-                            android:text="Welcome to AI Guru!"
-                            android:textSize="20sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            android:gravity="center"
-                            android:text="I'm here to help you with programming concepts, solve doubts, and guide you through your learning journey."
-                            android:textColor="@color/text_secondary"
-                            android:textSize="14sp" />
-
-                        <GridLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="24dp"
-                            android:columnCount="2">
-
-                            <com.google.android.material.button.MaterialButton
-                                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_columnWeight="1"
-                                android:layout_margin="4dp"
-                                android:text="Explain data structures"
-                                android:textAllCaps="false"
-                                android:textSize="12sp" />
-
-                            <com.google.android.material.button.MaterialButton
-                                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_columnWeight="1"
-                                android:layout_margin="4dp"
-                                android:text="Learn about OOP"
-                                android:textAllCaps="false"
-                                android:textSize="12sp" />
-
-                            <com.google.android.material.button.MaterialButton
-                                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_columnWeight="1"
-                                android:layout_margin="4dp"
-                                android:text="Code optimization tips"
-                                android:textAllCaps="false"
-                                android:textSize="12sp" />
-
-                            <com.google.android.material.button.MaterialButton
-                                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_columnWeight="1"
-                                android:layout_margin="4dp"
-                                android:text="Understand complexity"
-                                android:textAllCaps="false"
-                                android:textSize="12sp" />
-                        </GridLayout>
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-
-                <!-- Chat Messages Container would go here -->
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/rvChatMessages"
-                    android:layout_width="match_parent"
+                <TextView
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:visibility="gone" />
-
+                    android:layout_marginTop="8dp"
+                    android:gravity="center"
+                    android:text="Get instant technical answers, code examples, and program snippets."
+                    android:textColor="@color/text_secondary"
+                    android:textSize="14sp" />
             </LinearLayout>
-        </androidx.core.widget.NestedScrollView>
+        </com.google.android.material.card.MaterialCardView>
     </FrameLayout>
 
-    <!-- Bottom Input Area -->
+    <!-- Chat Output Box Area (Messages will appear here) -->
+    <!-- The RecyclerView above handles the output in a conversational way -->
+
+    <!-- Input Box Area -->
     <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        app:cardCornerRadius="12dp"
-        app:cardElevation="4dp">
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginBottom="16dp"
+        app:cardCornerRadius="24dp"
+        app:cardElevation="6dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="#EEEEEE">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:padding="8dp"
+            android:padding="6dp"
             android:gravity="center_vertical">
 
             <EditText
@@ -167,9 +114,11 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:background="@null"
-                android:hint="Ask me anything.."
+                android:hint="Ask your technical doubt..."
+                android:maxLines="4"
                 android:minHeight="48dp"
-                android:paddingHorizontal="12dp" />
+                android:paddingHorizontal="16dp"
+                android:textSize="15sp" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnSendMessage"
@@ -180,7 +129,9 @@
                 app:icon="@android:drawable/ic_menu_send"
                 app:iconGravity="textStart"
                 app:iconPadding="0dp"
-                app:cornerRadius="8dp" />
+                app:iconSize="24dp"
+                app:cornerRadius="24dp"
+                android:backgroundTint="@color/purple_700" />
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 

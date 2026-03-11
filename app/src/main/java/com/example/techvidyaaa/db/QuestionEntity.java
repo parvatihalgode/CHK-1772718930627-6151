@@ -9,6 +9,7 @@ public class QuestionEntity {
     public int id;
     
     public String subject;
+    public String difficulty; // "Easy", "Medium", "Hard"
     public String question;
     public String option1;
     public String option2;
@@ -16,8 +17,9 @@ public class QuestionEntity {
     public String option4;
     public int correctAnswerIndex;
 
-    public QuestionEntity(String subject, String question, String option1, String option2, String option3, String option4, int correctAnswerIndex) {
+    public QuestionEntity(String subject, String difficulty, String question, String option1, String option2, String option3, String option4, int correctAnswerIndex) {
         this.subject = subject;
+        this.difficulty = difficulty;
         this.question = question;
         this.option1 = option1;
         this.option2 = option2;

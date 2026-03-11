@@ -14,12 +14,16 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
+import androidx.navigation.NavOptions;
 import androidx.navigation.Navigation;
 
 import com.example.techvidyaaa.R;
 import com.example.techvidyaaa.databinding.FragmentLoginBinding;
 import com.example.techvidyaaa.db.DatabaseHelper;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
+import com.google.firebase.auth.FirebaseAuthInvalidUserException;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -52,8 +56,10 @@ public class LoginFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        // Safety: Double check if already logged in (MainActivity should handle this, but this is a fail-safe)
         if (mAuth.getCurrentUser() != null) {
-            Navigation.findNavController(view).navigate(R.id.action_loginFragment_to_navigation_home);
+            navigateToHome();
+            return;
         }
 
         binding.btnLogin.setOnClickListener(v -> {
@@ -61,50 +67,56 @@ public class LoginFragment extends Fragment {
             String password = binding.etPassword.getText().toString().trim();
 
             if (email.isEmpty() || password.isEmpty()) {
-                Toast.makeText(requireContext(), "Please enter credentials", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), "Please enter email and password", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            binding.btnLogin.setEnabled(false);
-            binding.progressBar.setVisibility(View.VISIBLE);
+            setLoading(true);
 
-            // Performance Fix: Run database check in background thread
-            executorService.execute(() -> {
-                boolean userExists = dbHelper.checkUser(email, password);
-                
-                mainHandler.post(() -> {
-                    if (userExists) {
-                        Toast.makeText(requireContext(), "Logging in...", Toast.LENGTH_SHORT).show();
-                        Navigation.findNavController(view).navigate(R.id.action_loginFragment_to_navigation_home);
-                        
-                        // Sync in background if online
-                        if (isNetworkAvailable()) {
-                            mAuth.signInWithEmailAndPassword(email, password);
+            // Primary Safety: Use Firebase for Authentication
+            if (isNetworkAvailable()) {
+                mAuth.signInWithEmailAndPassword(email, password)
+                        .addOnCompleteListener(task -> {
+                            if (task.isSuccessful()) {
+                                syncUserFromFirebase(email, password);
+                            } else {
+                                setLoading(false);
+                                handleAuthError(task.getException());
+                            }
+                        });
+            } else {
+                // Secondary: Check local DB if offline
+                executorService.execute(() -> {
+                    boolean userExists = dbHelper.checkUser(email, password);
+                    mainHandler.post(() -> {
+                        setLoading(false);
+                        if (userExists) {
+                            navigateToHome();
+                        } else {
+                            Toast.makeText(requireContext(), "No internet connection and no local user found.", Toast.LENGTH_LONG).show();
                         }
-                    } else if (isNetworkAvailable()) {
-                        // Online only check
-                        mAuth.signInWithEmailAndPassword(email, password)
-                                .addOnCompleteListener(task -> {
-                                    binding.progressBar.setVisibility(View.GONE);
-                                    if (task.isSuccessful()) {
-                                        syncUserFromFirebase(email, password);
-                                    } else {
-                                        Toast.makeText(requireContext(), "Login Failed: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
-                                        binding.btnLogin.setEnabled(true);
-                                    }
-                                });
-                    } else {
-                        binding.progressBar.setVisibility(View.GONE);
-                        Toast.makeText(requireContext(), "No local record found. Please connect to internet to login.", Toast.LENGTH_LONG).show();
-                        binding.btnLogin.setEnabled(true);
-                    }
+                    });
                 });
-            });
+            }
         });
 
         binding.tvSignup.setOnClickListener(v -> {
             Navigation.findNavController(view).navigate(R.id.action_loginFragment_to_signupFragment);
         });
+    }
+
+    private void handleAuthError(Exception e) {
+        String message = "Authentication failed.";
+        if (e instanceof FirebaseAuthInvalidUserException) {
+            message = "No account found with this email.";
+        } else if (e instanceof FirebaseAuthInvalidCredentialsException) {
+            message = "Invalid password.";
+        } else if (e != null && e.getMessage() != null && e.getMessage().contains("CONFIGURATION_NOT_FOUND")) {
+            message = "Server error: Please ensure Email/Password login is enabled in Firebase Console.";
+        } else if (e != null) {
+            message = e.getMessage();
+        }
+        Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show();
     }
 
     private void syncUserFromFirebase(String email, String password) {
@@ -118,17 +130,30 @@ public class LoginFragment extends Fragment {
                     String degree = snapshot.child("degree").getValue(String.class);
                     String year = snapshot.child("year").getValue(String.class);
                     
-                    // Save to local DB in background
                     executorService.execute(() -> dbHelper.addUser(username, degree, year, email, password));
                 }
-                if (isAdded()) {
-                    Navigation.findNavController(requireView()).navigate(R.id.action_loginFragment_to_navigation_home);
-                }
+                navigateToHome();
             }
 
             @Override
-            public void onCancelled(@NonNull DatabaseError error) {}
+            public void onCancelled(@NonNull DatabaseError error) {
+                navigateToHome(); // Navigate anyway if auth succeeded
+            }
         });
+    }
+
+    private void navigateToHome() {
+        if (!isAdded()) return;
+        NavController navController = Navigation.findNavController(requireView());
+        NavOptions navOptions = new NavOptions.Builder()
+                .setPopUpTo(R.id.loginFragment, true)
+                .build();
+        navController.navigate(R.id.navigation_home, null, navOptions);
+    }
+
+    private void setLoading(boolean isLoading) {
+        binding.btnLogin.setEnabled(!isLoading);
+        binding.progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
     }
 
     private boolean isNetworkAvailable() {

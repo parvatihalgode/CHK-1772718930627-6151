@@ -8,6 +8,7 @@
     android:background="#F8F9FA">
 
     <TextView
+        android:id="@+id/tvPracticeTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Practice Center"
@@ -23,10 +24,27 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Select Topic to Practice"
-        android:layout_marginBottom="24dp">
+        android:layout_marginBottom="16dp">
 
         <AutoCompleteTextView
             android:id="@+id/actvSubject"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="none" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Difficulty Selection Dropdown (Initially hidden or disabled) -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilDifficulty"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Select Difficulty Level"
+        android:layout_marginBottom="24dp"
+        android:visibility="gone">
+
+        <AutoCompleteTextView
+            android:id="@+id/actvDifficulty"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="none" />
@@ -68,7 +86,7 @@
                 android:id="@+id/tvSubjectStatus"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Available: 50+ Questions"
+                android:text="Choose difficulty after selecting subject"
                 android:textColor="@color/text_secondary"
                 android:layout_marginTop="8dp" />
 

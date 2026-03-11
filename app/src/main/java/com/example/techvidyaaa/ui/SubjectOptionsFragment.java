@@ -38,17 +38,12 @@ public class SubjectOptionsFragment extends Fragment {
         binding.cardOptionPractice.setOnClickListener(v -> animateAdvancedFeedback(v, () -> {
             Bundle args = new Bundle();
             args.putString("subjectName", subjectName);
+            args.putBoolean("isQuiz", false);
             Navigation.findNavController(v).navigate(R.id.navigation_practice, args);
         }));
 
         binding.cardOptionBattle.setOnClickListener(v -> animateAdvancedFeedback(v, () -> {
             Navigation.findNavController(v).navigate(R.id.navigation_battle);
-        }));
-
-        binding.cardOptionConcepts.setOnClickListener(v -> animateAdvancedFeedback(v, () -> {
-            Bundle args = new Bundle();
-            args.putString("subjectName", subjectName);
-            Navigation.findNavController(v).navigate(R.id.learnConceptsFragment, args);
         }));
 
         binding.cardOptionBooks.setOnClickListener(v -> animateAdvancedFeedback(v, () -> {
@@ -63,28 +58,29 @@ public class SubjectOptionsFragment extends Fragment {
     }
 
     private void animateAdvancedFeedback(View v, Runnable endAction) {
+        // Optimized animation: using lower elevation and faster duration for smoother performance
+        float originalElevation = v.getElevation();
         if (v instanceof MaterialCardView) {
-            ((MaterialCardView) v).setCardElevation(25f);
+            ((MaterialCardView) v).setCardElevation(originalElevation + 8f);
         } else {
-            v.setElevation(25f);
+            v.setElevation(originalElevation + 8f);
         }
 
         v.animate()
-                .scaleX(0.92f)
-                .scaleY(0.92f)
-                .alpha(0.6f)
-                .setDuration(100)
+                .scaleX(0.96f)
+                .scaleY(0.96f)
+                .setDuration(80)
                 .withEndAction(() -> {
+                    if (binding == null) return;
                     v.animate()
                             .scaleX(1.0f)
                             .scaleY(1.0f)
-                            .alpha(1.0f)
-                            .setDuration(100)
+                            .setDuration(80)
                             .withEndAction(() -> {
                                 if (v instanceof MaterialCardView) {
-                                    ((MaterialCardView) v).setCardElevation(4f);
+                                    ((MaterialCardView) v).setCardElevation(originalElevation);
                                 } else {
-                                    v.setElevation(4f);
+                                    v.setElevation(originalElevation);
                                 }
                                 endAction.run();
                             })

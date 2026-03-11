@@ -50,7 +50,9 @@ public class DownloadQuestionsWorker extends Worker {
             for (Map.Entry<String, List<RemoteQuestion>> entry : dataMap.entrySet()) {
                 String subject = entry.getKey();
                 for (RemoteQuestion rq : entry.getValue()) {
-                    allQuestions.add(new QuestionEntity(subject, rq.question, rq.o1, rq.o2, rq.o3, rq.o4, rq.correct));
+                    // Correctly passing all 8 required arguments to the QuestionEntity constructor
+                    String difficulty = rq.difficulty != null ? rq.difficulty : "Easy";
+                    allQuestions.add(new QuestionEntity(subject, difficulty, rq.question, rq.o1, rq.o2, rq.o3, rq.o4, rq.correct));
                 }
             }
 
@@ -67,7 +69,7 @@ public class DownloadQuestionsWorker extends Worker {
     }
 
     private static class RemoteQuestion {
-        String question, o1, o2, o3, o4;
+        String question, o1, o2, o3, o4, difficulty;
         int correct;
     }
 }

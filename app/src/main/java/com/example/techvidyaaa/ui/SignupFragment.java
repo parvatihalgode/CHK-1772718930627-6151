@@ -6,6 +6,7 @@ import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,13 +16,15 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
+import androidx.navigation.NavOptions;
 import androidx.navigation.Navigation;
 
 import com.example.techvidyaaa.R;
 import com.example.techvidyaaa.databinding.FragmentSignupBinding;
 import com.example.techvidyaaa.db.DatabaseHelper;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseAuthException;
+import com.google.firebase.auth.FirebaseAuthUserCollisionException;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -39,6 +42,7 @@ public class SignupFragment extends Fragment {
     private DatabaseHelper dbHelper;
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
+    private static final String TAG = "SignupFragment";
 
     @Nullable
     @Override
@@ -59,90 +63,92 @@ public class SignupFragment extends Fragment {
         binding.actvYear.setAdapter(adapter);
 
         binding.btnSignup.setOnClickListener(v -> {
-            animatePop(v, () -> {
-                String username = binding.etUsername.getText().toString().trim();
-                String degree = binding.etDegree.getText().toString().trim();
-                String year = binding.actvYear.getText().toString().trim();
-                String email = binding.etSignupEmail.getText().toString().trim();
-                String password = binding.etSignupPassword.getText().toString().trim();
+            String username = binding.etUsername.getText().toString().trim();
+            String degree = binding.etDegree.getText().toString().trim();
+            String year = binding.actvYear.getText().toString().trim();
+            String email = binding.etSignupEmail.getText().toString().trim();
+            String password = binding.etSignupPassword.getText().toString().trim();
 
-                if (username.isEmpty() || email.isEmpty() || password.isEmpty()) {
-                    Toast.makeText(requireContext(), "Please fill all required fields", Toast.LENGTH_SHORT).show();
-                    return;
-                }
+            if (username.isEmpty() || email.isEmpty() || password.isEmpty()) {
+                Toast.makeText(requireContext(), "Please fill all required fields", Toast.LENGTH_SHORT).show();
+                return;
+            }
 
-                if (password.length() < 6) {
-                    Toast.makeText(requireContext(), "Password must be at least 6 characters", Toast.LENGTH_SHORT).show();
-                    return;
-                }
+            if (password.length() < 6) {
+                Toast.makeText(requireContext(), "Password must be at least 6 characters", Toast.LENGTH_SHORT).show();
+                return;
+            }
 
-                binding.btnSignup.setEnabled(false);
+            setLoading(true);
 
-                // Performance: Save to local SQLite in background
-                executorService.execute(() -> {
-                    dbHelper.addUser(username, degree, year, email, password);
-                    
-                    mainHandler.post(() -> {
-                        if (isNetworkAvailable()) {
-                            // Online Signup
-                            mAuth.createUserWithEmailAndPassword(email, password)
-                                    .addOnCompleteListener(task -> {
-                                        if (task.isSuccessful()) {
-                                            FirebaseUser user = mAuth.getCurrentUser();
-                                            if (user != null) {
-                                                Map<String, Object> userMap = new HashMap<>();
-                                                userMap.put("username", username);
-                                                userMap.put("degree", degree);
-                                                userMap.put("year", year);
-                                                userMap.put("email", email);
-                                                mDatabase.child("users").child(user.getUid()).setValue(userMap);
-                                            }
-                                            Toast.makeText(requireContext(), "Signup Successful!", Toast.LENGTH_SHORT).show();
-                                            if (isAdded()) {
-                                                Navigation.findNavController(view).navigate(R.id.action_signupFragment_to_navigation_home);
-                                            }
-                                        } else {
-                                            handleSignupError(task.getException(), view);
-                                        }
-                                    });
-                        } else {
-                            // Offline Signup
-                            Toast.makeText(requireContext(), "Offline Mode: Signup saved locally.", Toast.LENGTH_LONG).show();
-                            if (isAdded()) {
-                                Navigation.findNavController(view).navigate(R.id.action_signupFragment_to_navigation_home);
+            if (isNetworkAvailable()) {
+                mAuth.createUserWithEmailAndPassword(email, password)
+                        .addOnCompleteListener(task -> {
+                            if (task.isSuccessful()) {
+                                FirebaseUser user = mAuth.getCurrentUser();
+                                if (user != null) {
+                                    Map<String, Object> userMap = new HashMap<>();
+                                    userMap.put("username", username);
+                                    userMap.put("degree", degree);
+                                    userMap.put("year", year);
+                                    userMap.put("email", email);
+                                    mDatabase.child("users").child(user.getUid()).setValue(userMap)
+                                            .addOnCompleteListener(dbTask -> {
+                                                if (!dbTask.isSuccessful()) {
+                                                    Log.e(TAG, "Database error: " + dbTask.getException());
+                                                }
+                                            });
+                                    
+                                    // Save locally as well
+                                    executorService.execute(() -> dbHelper.addUser(username, degree, year, email, password));
+                                }
+                                Toast.makeText(requireContext(), "Signup Successful!", Toast.LENGTH_SHORT).show();
+                                navigateToHome();
+                            } else {
+                                setLoading(false);
+                                handleSignupError(task.getException());
                             }
-                        }
-                    });
-                });
-            });
+                        });
+            } else {
+                setLoading(false);
+                Toast.makeText(requireContext(), "Internet connection required for first-time signup.", Toast.LENGTH_LONG).show();
+            }
         });
 
         binding.tvLogin.setOnClickListener(v -> {
-            animatePop(v, () -> Navigation.findNavController(view).popBackStack());
+            Navigation.findNavController(view).popBackStack();
         });
     }
 
-    private void animatePop(View v, Runnable endAction) {
-        v.animate().scaleX(0.95f).scaleY(0.95f).setDuration(100).withEndAction(() -> {
-            v.animate().scaleX(1.0f).scaleY(1.0f).setDuration(100).withEndAction(endAction).start();
-        }).start();
-    }
-
-    private void handleSignupError(Exception e, View view) {
-        binding.btnSignup.setEnabled(true);
-        if (e instanceof FirebaseAuthException) {
-            String errorCode = ((FirebaseAuthException) e).getErrorCode();
-            if (errorCode.equals("ERROR_EMAIL_ALREADY_IN_USE")) {
-                Toast.makeText(requireContext(), "Email already in use. Please login.", Toast.LENGTH_LONG).show();
+    private void handleSignupError(Exception e) {
+        String message = "Signup failed.";
+        Log.e(TAG, "Auth error: ", e);
+        if (e instanceof FirebaseAuthUserCollisionException) {
+            message = "This email is already registered. Please login.";
+        } else if (e != null && e.getMessage() != null) {
+            if (e.getMessage().contains("CONFIGURATION_NOT_FOUND")) {
+                message = "Sign-in method not enabled. Go to Firebase Console > Authentication > Sign-in method and enable Email/Password.";
+            } else if (e.getMessage().contains("INVALID_API_KEY")) {
+                message = "Invalid API Key in google-services.json.";
             } else {
-                Toast.makeText(requireContext(), "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
-            }
-        } else {
-            Toast.makeText(requireContext(), "Signup delay. Access granted locally.", Toast.LENGTH_LONG).show();
-            if (isAdded()) {
-                Navigation.findNavController(view).navigate(R.id.action_signupFragment_to_navigation_home);
+                message = e.getMessage();
             }
         }
+        Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show();
+    }
+
+    private void navigateToHome() {
+        if (!isAdded()) return;
+        NavController navController = Navigation.findNavController(requireView());
+        NavOptions navOptions = new NavOptions.Builder()
+                .setPopUpTo(R.id.loginFragment, true)
+                .build();
+        navController.navigate(R.id.navigation_home, null, navOptions);
+    }
+
+    private void setLoading(boolean isLoading) {
+        binding.btnSignup.setEnabled(!isLoading);
+        binding.progressBarSignup.setVisibility(isLoading ? View.VISIBLE : View.GONE);
     }
 
     private boolean isNetworkAvailable() {
@@ -155,6 +161,5 @@ public class SignupFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;
-        executorService.shutdown();
     }
 }
